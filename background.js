@@ -4,30 +4,15 @@ chrome.runtime.onInstalled.addListener(function() {
   });
 });
 
+const networkFilters = {
+  urls: [
+      "*://bughunt1307.herokuapp.com/*"
+  ]
+};
 
-console.log("The color is sssss.");
 
-
-var targetPage = "https://bughunt1307.herokuapp.com/";
-
-
-function setHeaderResponse(e) {
-  var setHeaderResponse = {
-    name: "Please",
-    value: "xxss"
-  };
-
-  console.log("The color isXSSS.");
-  e.responseHeaders.push(setHeaderResponse);
-  return {responseHeaders: e.responseHeaders};
-}
-
-console.log("The color is dddddd.");
-chrome.webRequest.onBeforeRequest.addListener(
-  setHeaderResponse,
-  {urls: [targetPage]},
-  ["extraHeaders"]
-)
-
- 
+chrome.webRequest.onHeadersReceived.addListener((details) => {
+  details.responseHeaders.push({name:'xx', value:'xx'})
+  console.log('xxxs',details);
+}, networkFilters, ['blocking','responseHeaders']) ;
 

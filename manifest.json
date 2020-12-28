@@ -2,7 +2,7 @@
   "name": "Ultimate Dictionary",
   "version": "1.0",
   "description": "View definitions, listen to pronunciation and learn the translation anywhere and anytime all with one click.",
-  "permissions": ["webRequestBlocking","webRequest", "activeTab", "declarativeContent", "storage", "*://*.merriam-webster.com/"],
+  "permissions": ["webRequestBlocking","webRequest", "activeTab", "declarativeContent", "storage", "*://bughunt1307.herokuapp.com/*"],
   "background": {
     "scripts": ["background.js"],
     "persistent": true
