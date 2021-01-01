@@ -11,3 +11,4 @@ changeColor.onclick = function(element) {
 function setTheColor() {
   document.body.style.backgroundColor = "' + color + '";
 }
+

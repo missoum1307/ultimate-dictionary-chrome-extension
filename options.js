@@ -13,3 +13,4 @@ function constructOptions(kButtonColors) {
   }
 }
 constructOptions(kButtonColors);
+

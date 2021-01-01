@@ -2,7 +2,7 @@
   "name": "Ultimate Dictionary",
   "version": "1.0",
   "description": "View definitions, listen to pronunciation and learn the translation anywhere and anytime all with one click.",
-  "permissions": ["webRequestBlocking","webRequest", "activeTab", "declarativeContent", "storage", "*://bughunt1307.herokuapp.com/*"],
+  "permissions": ["webRequestBlocking","webRequest", "activeTab", "declarativeContent", "storage", "<all_urls>"],
   "background": {
     "scripts": ["background.js"],
     "persistent": true
@@ -26,7 +26,8 @@
    {
      "matches": ["<all_urls>"],
      "css": ["myStyles.css"],
-     "js": ["contentScript.js"]
+     "js": ["contentScript.js"],
+     "all_frames":true
    }
  ],
   "manifest_version": 2

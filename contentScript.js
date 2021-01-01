@@ -1,40 +1,105 @@
-let wordClicked = window.getSelection()
-
-// insert the popup box of the definition  
-var d1o1 = document.createElement('div')
-var d1o2 = document.createElement('a')
-d1o2.href = '#'
-d1o2.id = 'closeDef'
-d1o2.innerHTML = '&times;'
-d1o1.textContent = 'bla blabla blabla blabla blabla blabla blabla blabla blabla bla'
-d1o1.id = 'DefPopup'
-d1o1.style.display = 'none'
-document.body.appendChild(d1o1)
-d1o1.insertAdjacentElement('afterbegin', d1o2)
-
-// Get word definition and pronunciation from merriam-webster.com
-// translation from translate.google.com
-function getWordDef(word) {
-
+// removing whitespaces from the selected word
+var removeWhiteSpaces = function(a) {
+	return a.replace(/^\s+|\s+$|/g, "")
 }
 
-// watching for the user doublelclicking on the word, shows the def in case there is one.  
+// variable holding the value of the clicked/selected word      
+let wordClicked = window.getSelection()
+
+// inserting the pop up box (container) of the definition for later use of showing
+// the definition in it.
+var BoxTextElement = '<div id="selectedWord" style="display: none"><strong id="selWorStro"></strong>\
+<audio id="playPronc" src=""></audio>\
+<button id="playProncButton" style="border: rgb(255, 255, 0); background: rgb(255, 255, 0)">&#x1F50A;</button>\
+<button id="CloseButton" style="border: rgb(255, 255, 0); background: rgb(255, 255, 0); position: absolute; top:0; right:0;">&times;</button>\
+</div><div id="englishDefinition"></div><div id="foreignTranslation"></div>'
+var d1o1 = document.createElement('div')
+d1o1.id = 'DefinitionPopup'
+document.body.append(d1o1)
+document.getElementById('DefinitionPopup').innerHTML = BoxTextElement
+
+
+async function fetchTransition(url, PostDataObject) {
+  		var response = await fetch(url, {
+    		method: 'POST',
+    		headers: {
+      			'Content-Type': 'application/json'
+    		},
+    	    body: JSON.stringify(PostDataObject) 
+  		})
+	return response.json()
+}
+
+let ArrayOfTranslations = []
+let ArrayOfWordPosition = []
+
 window.addEventListener('dblclick', (e) => {
 
-	var node = document.getElementById("DefPopup");
-	var a = document.createAttribute("style");
-	a.value = 'border-radius: 5px; background: #FFFF00; width: 15%; padding: 5px; position: absolute; top: ' + event.pageY + 'px; left: ' + event.pageX +'px;'
-	node.setAttributeNode(a);
-	d1o1.style.display = ''
-	getWordDef(wordClicked.toString())
-	
+	//oRange = wordClicked.getRangeAt(0)
+	//oRect = oRange.getBoundingClientRect()
+	//console.log(oRange)
+	//console.log(wordClicked)
+
+	var PostDataObject = {
+	"input":removeWhiteSpaces(wordClicked.toString().toLowerCase()),
+	"from":"eng",
+	"to":"ara",
+	"format":"text",
+	"options":{
+		"origin":"reversodesktop",
+		"sentenceSplitter":false,
+		"contextResults":true,
+		"languageDetection":false
+	}}
+		
+	if (typeof wordClicked.toString().toLowerCase() === 'string' && removeWhiteSpaces(wordClicked.toString().toLowerCase()) !== '') {
+
+			chrome.runtime.sendMessage({message: removeWhiteSpaces(wordClicked.toString().toLowerCase())}, (response) => {
+			})
+
+			ArrayOfWordPosition.push(event.pageY, event.pageX)
+
+			fetchTransition('https://api.reverso.net/translate/v1/translation', PostDataObject)
+  			.then((data) => {
+
+  		    	for (var i = 0; i < data.contextResults.results.length; i++) {
+  		    		
+  		   	 		ArrayOfTranslations.push(data.contextResults.results[i].translation)
+  		   		}
+  		   	})
+	} 
 })
 
-// hiding the popup box of the definition after reading it. 
+// awaiting for the definition translation and pronunciation to come from 
+// background.js and then show them to the user. 
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => { 
+
+	if (request.message != '') {
+			document.getElementById('DefinitionPopup').setAttribute('style', 'top: ' + ArrayOfWordPosition[0] + 'px; left: ' + ArrayOfWordPosition[1] + 'px; border-radius: 5px; background: rgb(255, 255, 0); width: 15%; padding: 5px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
+			document.getElementById('playPronc').src = request.message[1]
+			document.getElementById('selectedWord').childNodes[0].textContent = wordClicked + ' '
+			document.getElementById('englishDefinition').textContent = request.message[0]
+			document.getElementById('foreignTranslation').textContent = ArrayOfTranslations
+			document.getElementById('selectedWord').style.display = ''
+			document.getElementById('DefinitionPopup').style.display = ''
+
+	}
+	ArrayOfTranslations = []
+})
+
+// hiding the pop up box (container) of the definition after reading it. 
 window.addEventListener('click', (e) => {
-
-	d = document.getElementById("DefPopup");
-	d.style.display = 'none'
-	
+	if (e.target.id == 'playProncButton') {
+		document.getElementById('playPronc').play()
+	} else if (e.target.parentElement.id !== 'DefinitionPopup' && e.target.id !== 'playProncButton') {
+		document.getElementById('DefinitionPopup').style.display = 'none'
+		ArrayOfWordPosition = []
+		ArrayOfTranslations = []
+	} 
 })
 
+
+
+
+// fix the page reload when closing the def box.
+// not firing on iframes
