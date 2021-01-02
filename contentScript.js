@@ -1,10 +1,13 @@
 // removing whitespaces from the selected word
 var removeWhiteSpaces = function(a) {
+
 	return a.replace(/^\s+|\s+$|/g, "")
 }
 
 // variable holding the value of the clicked/selected word      
 let wordClicked = window.getSelection()
+let ArrayOfTranslations = []
+// let ArrayOfWordPosition = []
 
 // inserting the pop up box (container) of the definition for later use of showing
 // the definition in it.
@@ -25,13 +28,13 @@ async function fetchTransition(url, PostDataObject) {
     		headers: {
       			'Content-Type': 'application/json'
     		},
-    	    body: JSON.stringify(PostDataObject) 
+    	    body: JSON.stringify(PostDataObject),
+    	    referrerPolicy: 'no-referrer'
   		})
-	return response.json()
-}
 
-let ArrayOfTranslations = []
-let ArrayOfWordPosition = []
+  		return response.json()
+	
+}
 
 window.addEventListener('dblclick', (e) => {
 
@@ -40,15 +43,35 @@ window.addEventListener('dblclick', (e) => {
 	//console.log(oRange)
 	//console.log(wordClicked)
 
+	// if (e.pageY > window.innerHeight/ 2 ) e.pageY = e.pageY - 300
+	// if (e.pageX > window.innerWidth/ 2 ) e.pageX = e.pageX - 300	
+	if (e.pageY > window.innerHeight/ 2 && e.pageX > window.innerWidth/ 2) {
+		document.getElementById('DefinitionPopup').setAttribute('style', 'margin-left: -190px; margin-top: -190px; top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); width: 15%; padding: 5px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
+	} else if (e.pageY > window.innerHeight/ 2) {
+			 	document.getElementById('DefinitionPopup').setAttribute('style', 'margin-top: -190px; top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); width: 15%; padding: 5px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
+	} else if ( e.pageX > window.innerWidth/ 2 ) {
+					 	document.getElementById('DefinitionPopup').setAttribute('style', 'margin-left: -190px; top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); width: 15%; padding: 5px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
+	} else { 
+
+		document.getElementById('DefinitionPopup').setAttribute('style', 'top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); width: 15%; padding: 5px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
+
+	}
+	
+	 	// e.pageY = e.pageY + 'px; margin-top: -15%;'
+	 	// document.getElementById('DefinitionPopup').setAttribute('style', 'margin-top: -15%')
+
+
+	//document.getElementById('DefinitionPopup').setAttribute('style', 'top: ' + e.pageY + ' left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); width: 15%; padding: 5px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
+	
+
 	var PostDataObject = {
-	"input":removeWhiteSpaces(wordClicked.toString().toLowerCase()),
+	"input":removeWhiteSpaces(wordClicked.toString().toLowerCase()).endsWith('\'s') ? wordClicked.toString().toLowerCase().slice(0, -2) : removeWhiteSpaces(wordClicked.toString().toLowerCase()),
 	"from":"eng",
 	"to":"ara",
 	"format":"text",
 	"options":{
-		"origin":"reversodesktop",
-		"sentenceSplitter":false,
-		"contextResults":true,
+		"origin":"reversodesktop",		"sentenceSplitter":false,
+		"contextResults":true, 
 		"languageDetection":false
 	}}
 		
@@ -57,16 +80,22 @@ window.addEventListener('dblclick', (e) => {
 			chrome.runtime.sendMessage({message: removeWhiteSpaces(wordClicked.toString().toLowerCase())}, (response) => {
 			})
 
-			ArrayOfWordPosition.push(event.pageY, event.pageX)
+			// ArrayOfWordPosition.push(e.pageY, e.pageX)
 
 			fetchTransition('https://api.reverso.net/translate/v1/translation', PostDataObject)
   			.then((data) => {
 
-  		    	for (var i = 0; i < data.contextResults.results.length; i++) {
-  		    		
+  				if (data.contextResults.results.length == 0) {
+  					ArrayOfTranslations.push(data.translation)
+  				} else {
+  					for (var i = 0; i < data.contextResults.results.length; i++) {
+
   		   	 		ArrayOfTranslations.push(data.contextResults.results[i].translation)
-  		   		}
+  		   			}
+  				}
+
   		   	})
+
 	} 
 })
 
@@ -75,23 +104,34 @@ window.addEventListener('dblclick', (e) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => { 
 
 	if (request.message != '') {
-			document.getElementById('DefinitionPopup').setAttribute('style', 'top: ' + ArrayOfWordPosition[0] + 'px; left: ' + ArrayOfWordPosition[1] + 'px; border-radius: 5px; background: rgb(255, 255, 0); width: 15%; padding: 5px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
+			
 			document.getElementById('playPronc').src = request.message[1]
-			document.getElementById('selectedWord').childNodes[0].textContent = wordClicked + ' '
+			document.getElementById('selectedWord').childNodes[0].textContent = removeWhiteSpaces(wordClicked.toString().toLowerCase()).endsWith('\'s') ? wordClicked.toString().toLowerCase().slice(0, -2) : wordClicked
 			document.getElementById('englishDefinition').textContent = request.message[0]
 			document.getElementById('foreignTranslation').textContent = ArrayOfTranslations
 			document.getElementById('selectedWord').style.display = ''
 			document.getElementById('DefinitionPopup').style.display = ''
 
+			ArrayOfTranslations = []
+
 	}
-	ArrayOfTranslations = []
+
+	 
 })
+
+document.addEventListener('keydown', function (event) {
+  if (event.key === 'Escape') {
+    document.getElementById('DefinitionPopup').style.display = 'none'
+    ArrayOfTranslations = []
+  }
+})
+
 
 // hiding the pop up box (container) of the definition after reading it. 
 window.addEventListener('click', (e) => {
 	if (e.target.id == 'playProncButton') {
 		document.getElementById('playPronc').play()
-	} else if (e.target.parentElement.id !== 'DefinitionPopup' && e.target.id !== 'playProncButton') {
+	} else if (!e.target.parentElement || e.target.parentElement.id !== 'DefinitionPopup' && e.target.id !== 'playProncButton') {
 		document.getElementById('DefinitionPopup').style.display = 'none'
 		ArrayOfWordPosition = []
 		ArrayOfTranslations = []
@@ -99,7 +139,4 @@ window.addEventListener('click', (e) => {
 })
 
 
-
-
-// fix the page reload when closing the def box.
-// not firing on iframes
+// fixing tran not showing when there is only one tran  margin-top: -7%; margin-left: -7%; 

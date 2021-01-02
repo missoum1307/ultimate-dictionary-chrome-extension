@@ -30,8 +30,10 @@ chrome.runtime.onMessage.addListener(
   (request, sender, sendResponse) => { 
 	// Get the word definition and pronunciation from oxfordlearnersdictionaries.com
 	// and translation from reverso.net
-
+	
   	(async function fetchDefinition() {
+  		
+  		if (request.message.endsWith('\'s'))  request.message = request.message.slice(0, -2)
   		var res = await fetch('https://www.oxfordlearnersdictionaries.com/search/english/?q=' + request.message)
   		document.getElementById("DefinitioRender").innerHTML = await res.text()
 
