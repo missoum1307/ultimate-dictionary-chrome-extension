@@ -26,20 +26,35 @@ var extraInfo = ['blocking', 'responseHeaders']
 
 chrome.webRequest.onHeadersReceived.addListener(RemoveCSPAndAddOrigin, networkFilters, extraInfo)
 */
+let lanTra = []
+
+function translationLang() {
+  chrome.storage.sync.get([
+    'language'
+    ], function(items) {
+    lanTra.push(items.language)
+  })
+}
+
+translationLang()
 
 
 let ArrayOfTranslations = []
 
 chrome.runtime.onMessage.addListener(
   (request, sender, sendResponse) => { 
- 
+  
+  if (request.message.endsWith('\'s'))  {
+        request.message = request.message.slice(0, -2)
+      }
 
 	// Get the word definition and pronunciation from oxfordlearnersdictionaries.com
 	// and translation from reverso.net
   	(async function fetchDefinition() {
       async function show(){
         let data = JSON.parse(oReq.response)
-        if (data.contextResults.results.length == 0) {
+        console.log(data)
+        if (data.contextResults.results.length == 0 || data.contextResults.results[0].translation == '') {
           ArrayOfTranslations.push(data.translation)
         } else {
           for (var i = 0; i < data.contextResults.results.length; i++) {
@@ -53,35 +68,31 @@ chrome.runtime.onMessage.addListener(
           var DefinitionString = document.getElementsByClassName('def')[0].innerText
           var pronunciationLink = document.body.getElementsByClassName('sound')[1].dataset.srcMp3
           chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, {message: [DefinitionString, pronunciationLink, ArrayOfTranslations] }, function(response) {
+            chrome.tabs.sendMessage(tabs[0].id, {message: [DefinitionString, pronunciationLink, ArrayOfTranslations, request.message] }, function(response) {
 
             })
           })
         } else { 
           chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, {message: '' }, function(response) {
-
-            })
+            chrome.tabs.sendMessage(tabs[0].id, {message: ''})
           })
         }
       } 
 
       ArrayOfTranslations = []
-
-      if (request.message.endsWith('\'s'))  {
-        request.message = request.message.slice(0, -2)
-      }
+  
+    
 
       var oReq = new XMLHttpRequest()
       oReq.addEventListener("load", () => {
         show()
       })
-      oReq.open("POST", "https://api.reverso.net/translate/v1/translation", true)
+      oReq.open("POST", "https://api.reverso.net/translate/v1/translation")
       oReq.setRequestHeader('Content-Type', 'application/json')
       oReq.send(JSON.stringify({
         "input":request.message,
         "from":"eng",
-        "to":"ara",
+        "to":lanTra[0],
         "format":"text",
         "options":{
         "origin":"reversodesktop",    

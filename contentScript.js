@@ -59,7 +59,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	if (request.message != '') {
 			
 			document.getElementById('playPronc').src = request.message[1]
-			document.getElementById('selectedWord').childNodes[0].textContent = removeWhiteSpaces(wordClicked.toString().toLowerCase()).endsWith('\'s') ? wordClicked.toString().toLowerCase().slice(0, -2) : wordClicked
+			document.getElementById('selectedWord').childNodes[0].textContent = request.message[3]
 			document.getElementById('englishDefinition').textContent = request.message[0]
 			document.getElementById('foreignTranslation').textContent = request.message[2]
 			document.getElementById('selectedWord').style.display = ''
