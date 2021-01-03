@@ -2,7 +2,7 @@
   "name": "Ultimate Dictionary",
   "version": "1.0",
   "description": "View definitions, listen to pronunciation and learn the translation all with double click while browsing without leaving the page.",
-  "permissions": ["webRequestBlocking","webRequest", "activeTab", "declarativeContent", "storage", "<all_urls>"],
+  "permissions": [ "activeTab", "storage", "<all_urls>"],
   "background": {
     "scripts": ["background.js"],
     "persistent": true
