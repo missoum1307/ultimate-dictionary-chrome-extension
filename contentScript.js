@@ -13,7 +13,7 @@ var BoxTextElement = '<div id="selectedWord" style="display: none"><strong id="s
 <audio id="playPronc" src=""></audio>\
 <button id="playProncButton" style="border: rgb(255, 255, 0); background: rgb(255, 255, 0)">&#x1F50A;</button>\
 <button id="CloseButton" style="border: rgb(255, 255, 0); background: rgb(255, 255, 0); position: absolute; top:0; right:0;">&times;</button>\
-</div><div id="englishDefinition"></div><div id="foreignTranslation"></div>'
+</div><div id="englishDefinition"></div><div id="foreignTranslation" style="margin-top: 10px;"></div>'
 var d1o1 = document.createElement('div')
 d1o1.id = 'DefinitionPopup'
 document.body.append(d1o1)
@@ -27,28 +27,28 @@ window.addEventListener('dblclick', (e) => {
 	//console.log(oRange)
 	//console.log(wordClicked)
 
-	if (e.pageY < window.innerHeight/ 2 && e.pageX < window.innerWidth/ 2) {
-		document.getElementById('DefinitionPopup').setAttribute('style', 'display: none; top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); width: 15%; padding: 5px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
-	}
-
-	if (e.pageY < window.innerHeight/ 2 && e.pageX > window.innerWidth/ 2) {
-		document.getElementById('DefinitionPopup').setAttribute('style', 'margin-left: -190px; display: none; top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); width: 15%; padding: 5px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
-	}
-
-	if (e.pageY > window.innerHeight/ 2 && e.pageX < window.innerWidth/ 2) {
-		document.getElementById('DefinitionPopup').setAttribute('style', 'margin-top: -190px; display: none; top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); width: 15%; padding: 5px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
-	}
-
-	if (e.pageY > window.innerHeight/ 2 && e.pageX > window.innerWidth/ 2) {
-		document.getElementById('DefinitionPopup').setAttribute('style', 'margin-left: -190px; margin-top: -190px; display: none; top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); width: 15%; padding: 5px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
-	}
 
 
 	if (typeof wordClicked.toString().toLowerCase() === 'string' && removeWhiteSpaces(wordClicked.toString().toLowerCase()) !== '') {
+		chrome.runtime.sendMessage({message: removeWhiteSpaces(wordClicked.toString().toLowerCase())}, (response) => {
+			//console.log()
+		})
+		if (e.clientY < window.innerHeight/ 2 && e.clientX < window.innerWidth/ 2) {
+			document.getElementById('DefinitionPopup').setAttribute('style', 'font-size: 14px; width: 300px; height: auto; top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); padding: 9px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
+		}
 
-			chrome.runtime.sendMessage({message: removeWhiteSpaces(wordClicked.toString().toLowerCase())}, (response) => {
-			})
-	} 
+		if (e.clientY < window.innerHeight/ 2 && e.clientX > window.innerWidth/ 2) {
+			document.getElementById('DefinitionPopup').setAttribute('style', 'font-size: 14px; width: 300px; height: auto; margin-left: -190px; top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); padding: 9px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
+		}
+
+		if (e.clientY > window.innerHeight/ 2 && e.clientX < window.innerWidth/ 2) {
+			document.getElementById('DefinitionPopup').setAttribute('style', 'font-size: 14px; width: 300px; height: auto; margin-top: -190px; top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); padding: 9px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
+		}
+
+		if (e.clientY > window.innerHeight/ 2 && e.clientX > window.innerWidth/ 2) {
+			document.getElementById('DefinitionPopup').setAttribute('style', 'font-size: 14px; width: 300px; height: auto; margin-left: -190px; margin-top: -190px; top: ' + e.pageY + 'px; left: ' + e.pageX + 'px; border-radius: 7px; background: rgb(255, 255, 0); padding: 9px; position: absolute; z-index: 2147483647; overflow-wrap: break-word;')
+		}
+	}
 })
 
 // awaiting for the definition translation and pronunciation to come from 
@@ -86,6 +86,7 @@ window.addEventListener('click', (e) => {
 		document.getElementById('playPronc').play()
 	} else if (!e.target.parentElement || e.target.parentElement.id !== 'DefinitionPopup' && e.target.id !== 'playProncButton') {
 		document.getElementById('DefinitionPopup').style.display = 'none'
+		document.getElementById('selectedWord').style.display = 'none'
 		document.getElementById('playPronc').src = ''
 		document.getElementById('selectedWord').childNodes[0].textContent = ''
 		document.getElementById('englishDefinition').textContent = ''

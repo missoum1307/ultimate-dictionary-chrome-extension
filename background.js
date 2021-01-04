@@ -44,7 +44,7 @@ let ArrayOfTranslations = []
 chrome.runtime.onMessage.addListener(
   (request, sender, sendResponse) => { 
   
-  if (request.message.endsWith('\'s'))  {
+  if (request.message.endsWith('\'s') || request.message.endsWith('’s'))  {
         request.message = request.message.slice(0, -2)
       }
 
@@ -61,18 +61,30 @@ chrome.runtime.onMessage.addListener(
             ArrayOfTranslations.push(data.contextResults.results[i].translation)
           }
         }
-
+ 
         var res = await fetch('https://www.oxfordlearnersdictionaries.com/search/english/?q=' + request.message)
         document.getElementById("DefinitioRender").innerHTML = await res.text()
         if(document.getElementsByClassName('def').length > 0) {
           var DefinitionString = document.getElementsByClassName('def')[0].innerText
-          var pronunciationLink = document.body.getElementsByClassName('sound')[1].dataset.srcMp3
+          var pronunciationLink = document.getElementsByClassName('sound')[1].dataset.srcMp3
           chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+              console.log()
             chrome.tabs.sendMessage(tabs[0].id, {message: [DefinitionString, pronunciationLink, ArrayOfTranslations, request.message] }, function(response) {
 
             })
           })
-        } else { 
+        } else if (document.getElementsByClassName('xrefs').length > 0) {
+
+          var DefinitionString = document.getElementsByClassName('xrefs')[0].innerText
+          var pronunciationLink = document.getElementsByClassName('sound')[0].dataset.srcMp3
+          chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+
+            chrome.tabs.sendMessage(tabs[0].id, {message: [DefinitionString, pronunciationLink, ArrayOfTranslations, request.message] }, function(response) {
+
+            })
+          })
+
+        } else {
           chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             chrome.tabs.sendMessage(tabs[0].id, {message: ''})
           })
@@ -89,6 +101,7 @@ chrome.runtime.onMessage.addListener(
       })
       oReq.open("POST", "https://api.reverso.net/translate/v1/translation")
       oReq.setRequestHeader('Content-Type', 'application/json')
+
       oReq.send(JSON.stringify({
         "input":request.message,
         "from":"eng",
@@ -100,9 +113,11 @@ chrome.runtime.onMessage.addListener(
         "contextResults":true, 
         "languageDetection":false
         }}))
+
     })()
+
 })
 
 
 
-// fix the 's ending words ex:  browser's wont return no result
+// fixing the the following words def: works, you
