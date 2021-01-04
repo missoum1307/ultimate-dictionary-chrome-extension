@@ -86,7 +86,7 @@ chrome.runtime.onMessage.addListener(
 
         } else {
           chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            chrome.tabs.sendMessage(tabs[0].id, {message: ''})
+            chrome.tabs.sendMessage(tabs[0].id, {message: ['wordNotFound','Word not found in the dictionary!']})
           })
         }
       } 

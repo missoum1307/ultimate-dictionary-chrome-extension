@@ -57,15 +57,22 @@ window.addEventListener('dblclick', (e) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => { 
 
 	if (request.message != '') {
+			if (request.message[0] == 'wordNotFound') {
+				document.getElementById('selectedWord').childNodes[2].textContent = ''
+				document.getElementById('selectedWord').childNodes[0].textContent = request.message[1]
+				document.getElementById('selectedWord').style.display = '' 
 			
-			document.getElementById('playPronc').src = request.message[1]
-			document.getElementById('selectedWord').childNodes[0].textContent = request.message[3]
-			document.getElementById('englishDefinition').textContent = request.message[0]
-			document.getElementById('foreignTranslation').textContent = request.message[2]
-			document.getElementById('selectedWord').style.display = ''
-			document.getElementById('DefinitionPopup').style.display = ''
+			} else { 
+				document.getElementById('playPronc').src = request.message[1]
+				document.getElementById('selectedWord').childNodes[0].textContent = request.message[3] + ' '
+				document.getElementById('englishDefinition').textContent = request.message[0]
+				document.getElementById('foreignTranslation').textContent = request.message[2]
+				document.getElementById('selectedWord').style.display = ''
+				document.getElementById('DefinitionPopup').style.display = ''
 
-			ArrayOfTranslations = []
+				ArrayOfTranslations = []
+			}
+			
 
 	}
 	 
